@@ -4,7 +4,14 @@ import java.util.List;
 import java.util.Map;
 
 import retrofit2.Call;
+import retrofit2.http.Body;
+import retrofit2.http.Field;
+import retrofit2.http.FieldMap;
+import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
+import retrofit2.http.HTTP;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 import retrofit2.http.QueryMap;
@@ -26,11 +33,34 @@ public interface JsonPlaceHolderApi {
     @GET("posts")
     Call<List<Post>> getPosts(@QueryMap Map<String, String> parameters);
 
+    //GET request using placeholders & @Path replacement blocks
     @GET("posts/{id}/comments")
     Call<List<Comment>> getComments(@Path("id") int postId);
 
     //Do this if url format is more complex and not possible to use parameters and want to pass whole url
     @GET
     Call<List<Comment>> getComments(@Url String url);
+
+    //sending(POST) data to server through http body
+    @POST("posts")
+    Call<Post> createPost(@Body Post post);
+
+    //If your REST API require to send data in Form URL Encoded manner retrofit provides way for that too
+    //sending(POST) data to server through Form URL encoding
+    @FormUrlEncoded
+    @POST("posts")
+    Call<Post> createPost(
+            @Field("userId") int userId,
+            @Field("title") String title,
+            @Field("body") String text
+    );
+
+    /* Note: @Query & @Field performs same task ie send data in URL Encoded format
+    the diference is that @Query sends it over URL and @Field sends it in HTTP body */
+
+    @FormUrlEncoded
+    @POST("posts")
+    Call<Post> createPost(@FieldMap Map<String, String> fields);
+
 
 }

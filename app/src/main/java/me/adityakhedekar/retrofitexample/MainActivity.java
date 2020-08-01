@@ -39,7 +39,9 @@ public class MainActivity extends AppCompatActivity {
 
 //        getPosts();
 
-        getComments();
+//        getComments();
+
+        createPost();
 
     }
 
@@ -113,6 +115,46 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<List<Comment>> call, Throwable t) {
+                textViewRresult.setText(t.getMessage());
+            }
+        });
+    }
+
+    private void createPost() {
+        Post post = new Post(23, "New Title", "New Text");
+
+        Map<String, String> fields = new HashMap<>();
+        fields.put("userId", "25");
+        fields.put("title", "New Title");
+
+
+        Call<Post> call = jsonPlaceHolderApi.createPost(fields);
+
+        //while sending data in Form URL Format
+//        Call<Post> call = jsonPlaceHolderApi.createPost(23, "New Title", "New Text!!");
+
+        call.enqueue(new Callback<Post>() {
+            @Override
+            public void onResponse(Call<Post> call, Response<Post> response) {
+                if (!response.isSuccessful()) {
+                    textViewRresult.setText("Code: " + response.code());
+                    return;
+                }
+
+                Post postResponse = response.body();
+
+                String content = "";
+                content += "Code: " + response.code() + "\n";
+                content += "Id: " + postResponse.getId() + "\n";
+                content += "User ID: " + postResponse.getUserId() + "\n";
+                content += "Title: " + postResponse.getTitle() + "\n";
+                content += "Text: " + postResponse.getText() + "\n\n";
+
+                textViewRresult.setText(content);
+            }
+
+            @Override
+            public void onFailure(Call<Post> call, Throwable t) {
                 textViewRresult.setText(t.getMessage());
             }
         });

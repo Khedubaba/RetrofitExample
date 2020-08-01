@@ -5,6 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,10 +31,13 @@ public class MainActivity extends AppCompatActivity {
 
         textViewRresult = findViewById(R.id.text_view_result);
 
+        //If you want null values not to be dropped by Gson and put this null values in JSON as by default Gson doens't add null values
+        Gson gson = new GsonBuilder().serializeNulls().create();
+
         //instance of Retrofit
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://jsonplaceholder.typicode.com/")
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
 
         //now with Retrofit instance above we can create JSONPlaceholderAPI which cause Retrofit  to add all the boilerplate code at annotations in JsonPlaceHolder interface
@@ -41,7 +47,11 @@ public class MainActivity extends AppCompatActivity {
 
 //        getComments();
 
-        createPost();
+//        createPost();
+
+//        updatePost();
+
+        deletePost();
 
     }
 
@@ -155,6 +165,54 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<Post> call, Throwable t) {
+                textViewRresult.setText(t.getMessage());
+            }
+        });
+    }
+
+    private void updatePost() {
+        Post post = new Post(12, null, "New Text");
+
+        Call<Post> call = jsonPlaceHolderApi.patchPost(5, post);
+
+        call.enqueue(new Callback<Post>() {
+            @Override
+            public void onResponse(Call<Post> call, Response<Post> response) {
+                if (!response.isSuccessful()) {
+                    textViewRresult.setText("Code: " + response.code());
+                    return;
+                }
+
+                Post postResponse = response.body();
+
+                String content = "";
+                content += "Code: " + response.code() + "\n";
+                content += "Id: " + postResponse.getId() + "\n";
+                content += "User ID: " + postResponse.getUserId() + "\n";
+                content += "Title: " + postResponse.getTitle() + "\n";
+                content += "Text: " + postResponse.getText() + "\n\n";
+
+                textViewRresult.setText(content);
+            }
+
+            @Override
+            public void onFailure(Call<Post> call, Throwable t) {
+                textViewRresult.setText(t.getMessage());
+            }
+        });
+    }
+
+    private void deletePost() {
+        Call<Void> call = jsonPlaceHolderApi.deletePost(5);
+
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                textViewRresult.setText("Code: " + response.code());
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
                 textViewRresult.setText(t.getMessage());
             }
         });

@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -31,16 +33,26 @@ public class MainActivity extends AppCompatActivity {
 
         textViewRresult = findViewById(R.id.text_view_result);
 
-        //If you want null values not to be dropped by Gson and put this null values in JSON as by default Gson doens't add null values
+        //If you want null values not to be dropped by Gson and put this null values in JSON as by default Gson doesn't add null values.
         Gson gson = new GsonBuilder().serializeNulls().create();
+
+        //Using OkHttpClient for Logging as Retrofit can't do it by itself. As Retrofit itself uses OkHttp as underling library by default,
+        // so we can use OkHttp to make custom okhttp client for logging purposes.
+        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .addInterceptor(loggingInterceptor)
+                .build();
 
         //instance of Retrofit
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://jsonplaceholder.typicode.com/")
-                .addConverterFactory(GsonConverterFactory.create(gson))
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(okHttpClient)
                 .build();
 
-        //now with Retrofit instance above we can create JSONPlaceholderAPI which cause Retrofit  to add all the boilerplate code at annotations in JsonPlaceHolder interface
+        //now with Retrofit instance above we can create JSONPlaceholderAPI which cause Retrofit to add all the boilerplate code at annotations in JsonPlaceHolder interface
         jsonPlaceHolderApi = retrofit.create(JsonPlaceHolderApi.class);
 
 //        getPosts();
@@ -49,9 +61,9 @@ public class MainActivity extends AppCompatActivity {
 
 //        createPost();
 
-//        updatePost();
+        updatePost();
 
-        deletePost();
+//        deletePost();
 
     }
 
@@ -173,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
     private void updatePost() {
         Post post = new Post(12, null, "New Text");
 
-        Call<Post> call = jsonPlaceHolderApi.patchPost(5, post);
+        Call<Post> call = jsonPlaceHolderApi.putPost(5, post);
 
         call.enqueue(new Callback<Post>() {
             @Override
